@@ -1,0 +1,34 @@
+-----------------------
+Result / Data
+-----------------------
+
+The data is in file "data"
+
+Schema:
+
+Each data point is in three lines as following
+
+Line 1 | Data Generation RAte
+Line 2 | Average Values in order throughput, forwarding delay and jitter.
+Line 2 | Standard deviation Values in order throughput, forwarding delay and jitter.
+
+-----------------------
+Analysis
+-----------------------
+
+From the results and looking at the plots, we can observe the following trends with the increase in data generation rate:
+
+
+* Average Forwarding Delay first increases with the increase in data generation rate and then decreases at slow rate.
+
+* The trend in the confidence interval of forwarding delay is also similar.
+
+* Jitter first increases very fast with the increase in the data generation rate and the decreases exponentially.
+
+* The confidence interval is more when the average jitter is more.
+
+* The peak of mean jitter is slightly before the peak of the confidence interval for its value.
+
+* Throughput increases almost linearly with the increase in data generation rate.
+
+* The confidence interval also increases slightly with it.

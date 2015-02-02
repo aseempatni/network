@@ -1,0 +1,97 @@
+-----------------------------------
+Impact of packet size:
+-----------------------------------
+
+timeLastTPacket
+	remains same
+
+delaySum
+	increases slightly
+
+timesForwarded
+	always zero in case of our experiment
+
+rBytes
+	increases, which is obvious
+
+timeFirstTPacket
+	independent of interval
+
+bytesDropped
+	always zero in our case
+
+timeFirstRPacket
+	independent of interval, which is obvious
+
+lostPackets
+	never lost
+
+tPackets
+	same
+
+tBytes
+	increases, obvious
+
+rPackets
+	same
+
+recieverThroughput
+	increases linearly
+
+packetsDropped
+	always zero
+
+transmitterThroughput
+	increases linearly
+
+timeLastRPacket
+	increases slightly with increase in time interval
+
+------------------------------
+Impact of intervals:
+-----------------------------
+
+timeLastTPacket
+	reduces a bit, but almost the same
+
+delaySum
+	reduces
+
+timesForwarded
+	always zero in case of our experiment
+
+rBytes
+	reduces, which is obvious
+
+timeFirstTPacket
+	independent of interval
+
+bytesDropped
+	always zero in our case
+
+timeFirstRPacket
+	independent of interval, which is obvious
+
+lostPackets
+	never lost
+
+tPackets
+	reduces
+
+tBytes
+	reduces
+
+rPackets
+	reduces
+
+recieverThroughput
+	reduces
+
+packetsDropped
+	always zero
+
+transmitterThroughput
+	reduces
+
+timeLastRPacket
+	reduces slightly with increase in time interval
