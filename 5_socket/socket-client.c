@@ -12,10 +12,12 @@
 #include <list>
 #include <string>
 #include <iostream>
+#include <vector>
 #define BUFFER_SIZE 1024
 using namespace std;
 
 list<string> files;
+vector<string> allfiles;
 
 // code for client for FIS
 int sfd,wsfd;
@@ -84,6 +86,12 @@ void receive_file_list () {
   // printf("<= %s\n", recvBuff);
 }
 
+void view_allfile_list () {
+  cout << "Files available to download:" << endl;
+    for (std::vector<string>::iterator it = allfiles.begin() ; it != allfiles.end(); ++it){
+        std::cout << ' ' << *it << endl;
+  }
+}
 void view_file_list () {
   for(std::list<string>::iterator list_iter = files.begin(); 
     list_iter != files.end(); list_iter++)
@@ -112,9 +120,8 @@ void request_file(string ip,string file,string saveas)
   while((t=recv(filesocket, buffer, BUFFER_SIZE, 0))>0)
   {
     // cout << t << endl;
-    // for(int i=0;i<t;i++)
-    //   putc(buffer[i],f);
-
+    for(int i=0;i<t;i++)
+      putc(buffer[i],f);
   }
   fclose(f);
   close(filesocket);
@@ -148,29 +155,15 @@ void connectfis() {
 
 string append_filenams() {
   string out;
-  view_file_list();
-  // for(std::list<string>::iterator list_iter = files.begin(); 
-  //   list_iter != files.end(); list_iter++)
-  // {
-  //   std::cout<<*list_iter<<endl;
-  // }
+  // view_file_list();
+  for(std::list<string>::iterator list_iter = files.begin(); 
+    list_iter != files.end(); list_iter++)
+  {
+    out += *list_iter + ":";
+  }
+  return out;
 }
-void init () {
-  connectfis();
-  printf("Please enter the message: ");
-  string f = append_filenams();
-  cout <<f;
-  bzero(buffer,BUFFER_SIZE);
-  fgets(buffer,BUFFER_SIZE,stdin);
-  n=sendto(sock,buffer,
-           strlen(buffer),0,(const struct sockaddr *)&server,length);
-  if (n < 0) error("Sendto");
-  n = recvfrom(sock,buffer,BUFFER_SIZE,0,(struct sockaddr *)&from, &length);
-  if (n < 0) error("recvfrom");
-  write(1,"Got an ack: ",12);
-  write(1,buffer,n);
-  close(sock);
-}
+
 
 int getDetails (string file) {
   file = "REQ"+file;
@@ -187,11 +180,70 @@ int getDetails (string file) {
   if (buffer[0]=='-') return -1;
   return 0;
 }
+void Tokenize(const string& str,
+                      vector<string>& tokens,
+                      const string& delimiters = ":")
+{
+    // Skip delimiters at beginning.
+    string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+    // Find first "non-delimiter".
+    string::size_type pos     = str.find_first_of(delimiters, lastPos);
 
-void update_file_list() {
-
+    while (string::npos != pos || string::npos != lastPos)
+    {
+        // Found a token, add it to the vector.
+        tokens.push_back(str.substr(lastPos, pos - lastPos));
+        // Skip delimiters.  Note the "not_of"
+        lastPos = str.find_first_not_of(delimiters, pos);
+        // Find next "non-delimiter"
+        pos = str.find_first_of(delimiters, lastPos);
+    }
 }
+int update_file_list() {
+  string s = "UPD";
+  connectfis();
+  strcpy(buffer,s.c_str());
+  n=sendto(sock,buffer,
+           strlen(buffer),0,(const struct sockaddr *)&server,length);
+  if (n < 0) error("Sendto");
+  n = recvfrom(sock,buffer,BUFFER_SIZE,0,(struct sockaddr *)&from, &length);
+  if (n < 0) error("recvfrom");
+  vector<string> tokens;
+  string buf(buffer,n);
+  Tokenize(buf, tokens);
+  std::vector<std::string> vv = tokens;
+  allfiles.clear();
+  for (std::vector<string>::iterator it = vv.begin() ; it != vv.end(); ++it){
+        // std::cout << ' ' << *it << endl;
+    allfiles.push_back(*it);
+  }
+  view_allfile_list();
+  close(sock);
+  if (buffer[0]=='-') return -1;
+  return 0;
+}
+void init () {
+  connectfis();
+  // printf("Please enter the message: ");
+  string f = append_filenams();
+  f = "ADD" + f;
+  // cout << f << endl;
+  strcpy(buffer, f.c_str());
+  // bzero(buffer,BUFFER_SIZE);
+  // fgets(buffer,BUFFER_SIZE,stdin);
+  n=sendto(sock,buffer,
+           strlen(buffer),0,(const struct sockaddr *)&server,length);
+  if (n < 0) error("Sendto");
+  n = recvfrom(sock,buffer,BUFFER_SIZE,0,(struct sockaddr *)&from, &length);
+  if (n < 0) error("recvfrom");
+   printf("Datagram's IP address is: %s\n", inet_ntoa(from.sin_addr));
+   printf("Datagram's port is: %d\n", (int) ntohs(from.sin_port));
 
+  write(1,"Got an ack: ",12);
+  write(1,buffer,n);
+  close(sock);
+  update_file_list();
+}
 int main(int argc, char *argv[])
 {
   listDir();
@@ -211,7 +263,6 @@ int main(int argc, char *argv[])
     switch(input) {
       case 1:
         update_file_list();
-        view_file_list();
         break;
       case 2: {
         printf("File name: ");
