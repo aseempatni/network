@@ -78,6 +78,7 @@ if __name__ == "__main__":
 			lostPackets = lostPackets+1
 	parameter['queuingDelay'] = queuingDelay
 
+	# lindex = 0
 	for i in range(len(line)):
 		if line[i] == "ns3::UdpHeader":
 			lindex = i+2

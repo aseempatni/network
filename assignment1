@@ -1,0 +1,451 @@
+1.
+
+My IP  203.110.243.21
+My neighbours IP:
+203.110.243.23
+203.110.246.22
+
+The IP is like a address of the machine. It is different, so that every machine can be identified uniquely.
+
+
+2.
+
+In computer networks, a proxy server is a server (a computer system or an application) that acts as an intermediary for requests from clients seeking resources from other servers. A client connects to the proxy server, requesting some service, such as a file, connection, web page, or other resource available from a different server and the proxy server evaluates the request as a way to simplify and control its complexity. 
+
+Uses:
+
+a. 	Monitoring and filtering
+A content-filtering web proxy server provides administrative control over the content that may be relayed in one or both directions through the proxy. It is commonly used in both commercial and non-commercial organizations (especially schools) to ensure that Internet usage conforms to acceptable use policy.
+
+b.	Improving performance
+A caching proxy server accelerates service requests by retrieving content saved from a previous request made by the same client or even other clients. Caching proxies keep local copies of frequently requested resources, allowing large organizations to significantly reduce their upstream bandwidth usage and costs, while significantly increasing performance. 
+
+
+3.
+
+a.	google.com
+
+--- google.com ping statistics ---
+packets transmitted 	4
+received 	4
+packet loss 	0 %
+time 	3005 ms
+
+--- Round Trip Time (rtt) ---
+min 	36.861 ms
+avg 	36.885 ms
+max 	36.899 ms
+mdev 	0.014 ms
+
+
+b.	facebook.com
+
+--- facebook.com ping statistics ---
+packets transmitted 	4
+received 	4
+packet loss 	0 %
+time 	3000 ms
+
+--- Round Trip Time (rtt) ---
+min 	110.943 ms
+avg 	111.092 ms
+max 	111.177 ms
+mdev 	0.417 ms
+
+
+c.	208.67.222.222
+
+--- 208.67.222.222 ping statistics ---
+packets transmitted 	4
+received 	4
+packet loss 	0 %
+time 	3002 ms
+
+--- Round Trip Time (rtt) ---
+min 	5.312 ms
+avg 	5.332 ms
+max 	5.355 ms
+mdev 	0.054 ms
+
+
+d.	10.3.100.207
+
+--- 10.3.100.207 ping statistics ---
+packets transmitted 	9
+received 	0
+packet loss 	100 %
+time 	8040 ms
+
+
+4.
+
+The Domain Name System (DNS) is a hierarchical distributed naming system for computers, services, or any resource connected to the Internet or a private network. It associates various information with domain names assigned to each of the participating entities. Most prominently, it translates domain names, which can be easily memorized by humans, to the numerical IP addresses needed for the purpose of computer services and devices worldwide. The Domain Name System is an essential component of the functionality of most Internet services.
+
+Average round trip time in 3.c is always less than that of 3.a because of the bandwidth of the server.
+
+
+4.
+
+a.
+
+Trace of google.com
+
+1 	  	  	  			*	*	*
+2 	hos-tr2.juniper1.rz13.hetzner.de 	213.239.224.33 		de 	0.130 ms 	 	 
+	hos-tr4.juniper2.rz13.hetzner.de 	213.239.224.97 		de 	0.305 ms 	0.322 ms
+3 	core22.hetzner.de 			213.239.245.121 	de 	0.229 ms 	 	 
+	core21.hetzner.de 			213.239.245.81 		de 	0.226 ms 	0.220 ms
+4 	core4.hetzner.de 			213.239.245.14 		de 	4.858 ms 	 	 
+	core1.hetzner.de 			213.239.245.218 	de 	4.780 ms 	 
+	core4.hetzner.de 			213.239.245.18 		de 	4.928 ms
+5 	juniper4.ffm.hetzner.de 		213.239.245.1 		de 	4.851 ms 	 	 
+	juniper1.ffm.hetzner.de 		213.239.245.5 		de 	4.957 ms 	 
+	juniper4.ffm.hetzner.de 		213.239.245.1 		de 	4.851 ms
+6 	riga-sa8-ic2-crs1.telekom.lv 		80.81.194.165 		de 	37.041 ms 	40.893 ms 	40.911 ms
+7 	  	  	  			*	*	*
+8 	  	  	  			*	*	*
+9 	  	  	  			*	*	*
+No reply for 3 hops. Assuming we reached firewall.
+
+Hops - 6
+
+Location
+	Germany
+
+
+b.
+
+Trace for facebook.com
+
+1 	  	  	  	*	*	*
+2 	hos-tr4.juniper2.rz13.hetzner.de 	213.239.224.97 		de 	19.212 ms 	 	 
+	hos-tr3.juniper2.rz13.hetzner.de 	213.239.224.65 		de 	19.291 ms 	19.363 ms
+3 	core21.hetzner.de 			213.239.245.81 		de 	0.278 ms 	 	 
+	core22.hetzner.de 			213.239.245.121 	de 	0.184 ms 	0.263 ms
+4 	core1.hetzner.de 			213.239.245.177 	de 	4.979 ms 	5.167 ms 	 
+	core1.hetzner.de 			213.239.245.218 	de 	4.834 ms
+5 	juniper1.ffm.hetzner.de 		213.239.245.5 		de 	5.238 ms 	5.234 ms 	5.227 ms
+6 	ae1.br01.fra1.tfbnw.net 		80.81.194.40 		de 	5.221 ms 	5.008 ms 	4.965 ms
+7 	be2.bb02.fra2.tfbnw.net 		31.13.27.205 		ie 	104.688 ms 	 	 
+	be2.bb01.fra2.tfbnw.net 		31.13.27.203 		ie 	111.521 ms 	 
+	be4.bb02.fra2.tfbnw.net 		31.13.24.18 		ie 	109.415 ms
+8 	ae12.bb01.ams2.tfbnw.net 		74.119.78.40 		us 	11.978 ms 	12.092 ms 	12.040 ms
+9 	ae8.bb01.lhr2.tfbnw.net 		31.13.30.195 		ie 	63.185 ms 	17.027 ms 	62.966 ms
+10 	be11.bb01.ewr2.tfbnw.net 		31.13.30.98 		ie 	110.262 ms 	106.432 ms 	111.442 ms
+11 	be44.bb01.iad3.tfbnw.net 		31.13.26.1 		ie 	106.286 ms 	 	 
+	be44.bb02.iad3.tfbnw.net 		31.13.26.5 		ie 	108.176 ms 	 
+	be44.bb01.iad3.tfbnw.net 		31.13.26.1 		ie 	106.286 ms
+12 	ae13.bb04.frc3.tfbnw.net 		31.13.24.86 		ie 	108.033 ms 	 	 
+	ae13.bb03.frc3.tfbnw.net 		31.13.24.80 		ie 	107.809 ms 	 
+	ae17.bb03.frc3.tfbnw.net 		31.13.29.220 		ie 	108.204 ms
+13 	ae61.dr02.frc3.tfbnw.net 		173.252.64.63 		us 	114.098 ms 	 	 
+	ae61.dr03.frc3.tfbnw.net 		173.252.64.65 		us 	114.743 ms 	 
+	ae63.dr04.frc3.tfbnw.net 		173.252.65.123 		us 	106.120 ms
+14 	  	  	  			*	*	*
+15 	  	  	  			*	*	*
+16 	edge-star-shv-12-frc3.facebook.com 	173.252.120.6 	us 	108.807 ms 	105.944 ms 	105.956 ms
+
+Hops - 13
+
+Locations
+	Germany
+	Ireland 
+	United States
+
+
+c.
+
+traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
+1 	  	  	  	*	*	*
+2 	hos-tr4.juniper2.rz13.hetzner.de 	213.239.224.97 		de 	0.564 ms 	 	 
+	hos-tr1.juniper1.rz13.hetzner.de 	213.239.224.1 		de 	0.151 ms 	0.329 ms
+3 	core21.hetzner.de 			213.239.245.81 		de 	0.794 ms 	 	 
+	core22.hetzner.de 			213.239.245.121 	de 	0.686 ms 	 
+	core21.hetzner.de 			213.239.245.81 		de 	0.794 ms
+4 	core1.hetzner.de 			213.239.245.177 	de 	4.825 ms 	 	 
+	core1.hetzner.de 			213.239.245.218 	de 	4.956 ms 	 
+	core4.hetzner.de 			213.239.245.18 		de 	5.084 ms
+5 	juniper4.ffm.hetzner.de 		213.239.245.1 		de 	5.107 ms 	 	 
+	juniper1.ffm.hetzner.de 		213.239.245.5 		de 	5.255 ms 	 
+	juniper4.ffm.hetzner.de 		213.239.245.1 		de 	5.107 ms
+6 	de-cix20.net.google.com 		80.81.193.108 		de 	6.317 ms 	6.032 ms 	 
+	google.fra.ecix.net 		`	62.69.146.14 		de 	5.694 ms
+7 	  	  	  			*	*	*
+8 	  	  	  			*	*	*
+9 	google-public-dns-a.google.com 		8.8.8.8 		us 	6.494 ms 	6.097 ms 	6.398 ms
+
+Hops - 6
+
+Location
+	Germany
+	United States
+
+de - Germany
+ie - Ireland
+us - United States
+
+
+5.
+
+Network layer firewalls, also called packet filters, operate at a relatively low level of the TCP/IP protocol stack, not allowing packets to pass through the firewall unless they match the established rule set.The firewall administrator may define the rules; or default rules may apply. The term "packet filter" originated in the context of BSD operating systems.
+
+Uses
+
+Stateful firewalls maintain context about active sessions, and use that "state information" to speed packet processing.
+
+ping request in 3.d fails every time because it is blocked by the proxy/firewall. We are trying to access a local address from outside the network.
+
+
+6.
+
+The request succeeds whren issued locally because the ip address is of a local proxy and we are trying to ping it from inside the local area network.
+
+PING 10.3.100.207 (10.3.100.207) 56(84) bytes of data.
+64 bytes from 10.3.100.207: icmp_seq=1 ttl=252 time=0.408 ms
+64 bytes from 10.3.100.207: icmp_seq=2 ttl=252 time=0.453 ms
+64 bytes from 10.3.100.207: icmp_seq=3 ttl=252 time=0.457 ms
+64 bytes from 10.3.100.207: icmp_seq=4 ttl=252 time=0.450 ms
+64 bytes from 10.3.100.207: icmp_seq=5 ttl=252 time=0.412 ms
+64 bytes from 10.3.100.207: icmp_seq=6 ttl=252 time=0.489 ms
+64 bytes from 10.3.100.207: icmp_seq=7 ttl=252 time=0.466 ms
+64 bytes from 10.3.100.207: icmp_seq=8 ttl=252 time=0.427 ms
+64 bytes from 10.3.100.207: icmp_seq=9 ttl=252 time=0.470 ms
+64 bytes from 10.3.100.207: icmp_seq=10 ttl=252 time=0.383 ms
+64 bytes from 10.3.100.207: icmp_seq=11 ttl=252 time=0.436 ms
+64 bytes from 10.3.100.207: icmp_seq=12 ttl=252 time=0.454 ms
+64 bytes from 10.3.100.207: icmp_seq=13 ttl=252 time=0.443 ms
+64 bytes from 10.3.100.207: icmp_seq=14 ttl=252 time=0.418 ms
+64 bytes from 10.3.100.207: icmp_seq=15 ttl=252 time=0.510 ms
+64 bytes from 10.3.100.207: icmp_seq=16 ttl=252 time=0.399 ms
+64 bytes from 10.3.100.207: icmp_seq=17 ttl=252 time=0.367 ms
+64 bytes from 10.3.100.207: icmp_seq=18 ttl=252 time=0.362 ms
+64 bytes from 10.3.100.207: icmp_seq=19 ttl=252 time=0.419 ms
+64 bytes from 10.3.100.207: icmp_seq=20 ttl=252 time=0.431 ms
+
+--- 10.3.100.207 ping statistics ---
+20 packets transmitted, 20 received, 0% packet loss, time 19000ms
+rtt min/avg/max/mdev = 0.362/0.432/0.510/0.044 ms
+
+
+PING 10.3.100.207 (10.3.100.207) 120(148) bytes of data.
+128 bytes from 10.3.100.207: icmp_seq=1 ttl=252 time=0.449 ms
+128 bytes from 10.3.100.207: icmp_seq=2 ttl=252 time=0.445 ms
+128 bytes from 10.3.100.207: icmp_seq=3 ttl=252 time=0.416 ms
+128 bytes from 10.3.100.207: icmp_seq=4 ttl=252 time=0.395 ms
+128 bytes from 10.3.100.207: icmp_seq=5 ttl=252 time=0.453 ms
+128 bytes from 10.3.100.207: icmp_seq=6 ttl=252 time=0.446 ms
+128 bytes from 10.3.100.207: icmp_seq=7 ttl=252 time=0.416 ms
+128 bytes from 10.3.100.207: icmp_seq=8 ttl=252 time=0.424 ms
+128 bytes from 10.3.100.207: icmp_seq=9 ttl=252 time=0.486 ms
+128 bytes from 10.3.100.207: icmp_seq=10 ttl=252 time=0.495 ms
+128 bytes from 10.3.100.207: icmp_seq=11 ttl=252 time=0.440 ms
+128 bytes from 10.3.100.207: icmp_seq=12 ttl=252 time=0.429 ms
+128 bytes from 10.3.100.207: icmp_seq=13 ttl=252 time=0.508 ms
+128 bytes from 10.3.100.207: icmp_seq=14 ttl=252 time=0.385 ms
+128 bytes from 10.3.100.207: icmp_seq=15 ttl=252 time=0.387 ms
+128 bytes from 10.3.100.207: icmp_seq=16 ttl=252 time=0.446 ms
+128 bytes from 10.3.100.207: icmp_seq=17 ttl=252 time=0.444 ms
+128 bytes from 10.3.100.207: icmp_seq=18 ttl=252 time=0.487 ms
+128 bytes from 10.3.100.207: icmp_seq=19 ttl=252 time=0.701 ms
+128 bytes from 10.3.100.207: icmp_seq=20 ttl=252 time=0.412 ms
+
+--- 10.3.100.207 ping statistics ---
+20 packets transmitted, 20 received, 0% packet loss, time 19000ms
+rtt min/avg/max/mdev = 0.385/0.453/0.701/0.067 ms
+
+
+PING 10.3.100.207 (10.3.100.207) 248(276) bytes of data.
+256 bytes from 10.3.100.207: icmp_seq=1 ttl=252 time=0.466 ms
+256 bytes from 10.3.100.207: icmp_seq=2 ttl=252 time=0.436 ms
+256 bytes from 10.3.100.207: icmp_seq=3 ttl=252 time=0.431 ms
+256 bytes from 10.3.100.207: icmp_seq=4 ttl=252 time=0.505 ms
+256 bytes from 10.3.100.207: icmp_seq=5 ttl=252 time=0.491 ms
+256 bytes from 10.3.100.207: icmp_seq=6 ttl=252 time=0.440 ms
+256 bytes from 10.3.100.207: icmp_seq=7 ttl=252 time=0.456 ms
+256 bytes from 10.3.100.207: icmp_seq=8 ttl=252 time=0.571 ms
+256 bytes from 10.3.100.207: icmp_seq=9 ttl=252 time=0.567 ms
+256 bytes from 10.3.100.207: icmp_seq=10 ttl=252 time=0.498 ms
+256 bytes from 10.3.100.207: icmp_seq=11 ttl=252 time=0.456 ms
+256 bytes from 10.3.100.207: icmp_seq=12 ttl=252 time=0.439 ms
+256 bytes from 10.3.100.207: icmp_seq=13 ttl=252 time=0.480 ms
+256 bytes from 10.3.100.207: icmp_seq=14 ttl=252 time=0.468 ms
+256 bytes from 10.3.100.207: icmp_seq=15 ttl=252 time=0.725 ms
+256 bytes from 10.3.100.207: icmp_seq=16 ttl=252 time=0.433 ms
+256 bytes from 10.3.100.207: icmp_seq=17 ttl=252 time=0.452 ms
+256 bytes from 10.3.100.207: icmp_seq=18 ttl=252 time=0.442 ms
+256 bytes from 10.3.100.207: icmp_seq=19 ttl=252 time=0.409 ms
+256 bytes from 10.3.100.207: icmp_seq=20 ttl=252 time=0.506 ms
+
+--- 10.3.100.207 ping statistics ---
+20 packets transmitted, 20 received, 0% packet loss, time 19000ms
+rtt min/avg/max/mdev = 0.409/0.483/0.725/0.073 ms
+
+
+PING 10.3.100.207 (10.3.100.207) 504(532) bytes of data.
+512 bytes from 10.3.100.207: icmp_seq=1 ttl=252 time=1.11 ms
+512 bytes from 10.3.100.207: icmp_seq=2 ttl=252 time=0.460 ms
+512 bytes from 10.3.100.207: icmp_seq=3 ttl=252 time=0.526 ms
+512 bytes from 10.3.100.207: icmp_seq=4 ttl=252 time=0.462 ms
+512 bytes from 10.3.100.207: icmp_seq=5 ttl=252 time=0.454 ms
+512 bytes from 10.3.100.207: icmp_seq=6 ttl=252 time=0.435 ms
+512 bytes from 10.3.100.207: icmp_seq=7 ttl=252 time=0.510 ms
+512 bytes from 10.3.100.207: icmp_seq=8 ttl=252 time=0.465 ms
+512 bytes from 10.3.100.207: icmp_seq=9 ttl=252 time=0.487 ms
+512 bytes from 10.3.100.207: icmp_seq=10 ttl=252 time=0.470 ms
+512 bytes from 10.3.100.207: icmp_seq=11 ttl=252 time=0.467 ms
+512 bytes from 10.3.100.207: icmp_seq=12 ttl=252 time=0.504 ms
+512 bytes from 10.3.100.207: icmp_seq=13 ttl=252 time=0.453 ms
+512 bytes from 10.3.100.207: icmp_seq=14 ttl=252 time=0.481 ms
+512 bytes from 10.3.100.207: icmp_seq=15 ttl=252 time=0.502 ms
+512 bytes from 10.3.100.207: icmp_seq=16 ttl=252 time=0.463 ms
+512 bytes from 10.3.100.207: icmp_seq=17 ttl=252 time=0.769 ms
+512 bytes from 10.3.100.207: icmp_seq=18 ttl=252 time=0.592 ms
+512 bytes from 10.3.100.207: icmp_seq=19 ttl=252 time=0.480 ms
+512 bytes from 10.3.100.207: icmp_seq=20 ttl=252 time=0.452 ms
+
+--- 10.3.100.207 ping statistics ---
+20 packets transmitted, 20 received, 0% packet loss, time 19001ms
+rtt min/avg/max/mdev = 0.435/0.527/1.113/0.152 ms
+
+
+PING 10.3.100.207 (10.3.100.207) 1016(1044) bytes of data.
+1024 bytes from 10.3.100.207: icmp_seq=1 ttl=252 time=0.530 ms
+1024 bytes from 10.3.100.207: icmp_seq=2 ttl=252 time=0.558 ms
+1024 bytes from 10.3.100.207: icmp_seq=3 ttl=252 time=0.523 ms
+1024 bytes from 10.3.100.207: icmp_seq=4 ttl=252 time=0.523 ms
+1024 bytes from 10.3.100.207: icmp_seq=5 ttl=252 time=0.556 ms
+1024 bytes from 10.3.100.207: icmp_seq=6 ttl=252 time=0.537 ms
+1024 bytes from 10.3.100.207: icmp_seq=7 ttl=252 time=0.433 ms
+1024 bytes from 10.3.100.207: icmp_seq=8 ttl=252 time=0.523 ms
+1024 bytes from 10.3.100.207: icmp_seq=9 ttl=252 time=0.505 ms
+1024 bytes from 10.3.100.207: icmp_seq=10 ttl=252 time=0.519 ms
+1024 bytes from 10.3.100.207: icmp_seq=11 ttl=252 time=10.7 ms
+1024 bytes from 10.3.100.207: icmp_seq=12 ttl=252 time=0.562 ms
+1024 bytes from 10.3.100.207: icmp_seq=13 ttl=252 time=0.586 ms
+1024 bytes from 10.3.100.207: icmp_seq=14 ttl=252 time=0.522 ms
+1024 bytes from 10.3.100.207: icmp_seq=15 ttl=252 time=0.539 ms
+1024 bytes from 10.3.100.207: icmp_seq=16 ttl=252 time=0.572 ms
+1024 bytes from 10.3.100.207: icmp_seq=17 ttl=252 time=0.555 ms
+1024 bytes from 10.3.100.207: icmp_seq=18 ttl=252 time=0.470 ms
+1024 bytes from 10.3.100.207: icmp_seq=19 ttl=252 time=0.528 ms
+1024 bytes from 10.3.100.207: icmp_seq=20 ttl=252 time=0.520 ms
+
+--- 10.3.100.207 ping statistics ---
+20 packets transmitted, 20 received, 0% packet loss, time 19003ms
+rtt min/avg/max/mdev = 0.433/1.041/10.760/2.229 ms
+
+
+PING 10.3.100.207 (10.3.100.207) 2040(2068) bytes of data.
+2048 bytes from 10.3.100.207: icmp_seq=1 ttl=252 time=0.564 ms
+2048 bytes from 10.3.100.207: icmp_seq=2 ttl=252 time=0.708 ms
+2048 bytes from 10.3.100.207: icmp_seq=3 ttl=252 time=0.631 ms
+2048 bytes from 10.3.100.207: icmp_seq=4 ttl=252 time=0.693 ms
+2048 bytes from 10.3.100.207: icmp_seq=5 ttl=252 time=0.642 ms
+2048 bytes from 10.3.100.207: icmp_seq=6 ttl=252 time=0.611 ms
+2048 bytes from 10.3.100.207: icmp_seq=7 ttl=252 time=0.636 ms
+2048 bytes from 10.3.100.207: icmp_seq=8 ttl=252 time=0.610 ms
+2048 bytes from 10.3.100.207: icmp_seq=9 ttl=252 time=0.650 ms
+2048 bytes from 10.3.100.207: icmp_seq=10 ttl=252 time=0.622 ms
+2048 bytes from 10.3.100.207: icmp_seq=11 ttl=252 time=0.653 ms
+2048 bytes from 10.3.100.207: icmp_seq=12 ttl=252 time=0.645 ms
+2048 bytes from 10.3.100.207: icmp_seq=13 ttl=252 time=0.656 ms
+2048 bytes from 10.3.100.207: icmp_seq=14 ttl=252 time=0.659 ms
+2048 bytes from 10.3.100.207: icmp_seq=15 ttl=252 time=0.619 ms
+2048 bytes from 10.3.100.207: icmp_seq=16 ttl=252 time=0.618 ms
+2048 bytes from 10.3.100.207: icmp_seq=17 ttl=252 time=0.649 ms
+2048 bytes from 10.3.100.207: icmp_seq=18 ttl=252 time=0.627 ms
+2048 bytes from 10.3.100.207: icmp_seq=19 ttl=252 time=0.670 ms
+2048 bytes from 10.3.100.207: icmp_seq=20 ttl=252 time=0.650 ms
+
+--- 10.3.100.207 ping statistics ---
+20 packets transmitted, 20 received, 0% packet loss, time 19001ms
+rtt min/avg/max/mdev = 0.564/0.640/0.708/0.041 ms
+
+
+PING 10.3.100.207 (10.3.100.207) 4088(4116) bytes of data.
+4096 bytes from 10.3.100.207: icmp_seq=1 ttl=252 time=0.669 ms
+4096 bytes from 10.3.100.207: icmp_seq=2 ttl=252 time=0.621 ms
+4096 bytes from 10.3.100.207: icmp_seq=3 ttl=252 time=0.654 ms
+4096 bytes from 10.3.100.207: icmp_seq=4 ttl=252 time=0.641 ms
+4096 bytes from 10.3.100.207: icmp_seq=5 ttl=252 time=0.667 ms
+4096 bytes from 10.3.100.207: icmp_seq=6 ttl=252 time=0.646 ms
+4096 bytes from 10.3.100.207: icmp_seq=7 ttl=252 time=0.676 ms
+4096 bytes from 10.3.100.207: icmp_seq=8 ttl=252 time=0.602 ms
+4096 bytes from 10.3.100.207: icmp_seq=9 ttl=252 time=0.614 ms
+4096 bytes from 10.3.100.207: icmp_seq=10 ttl=252 time=0.622 ms
+4096 bytes from 10.3.100.207: icmp_seq=11 ttl=252 time=0.646 ms
+4096 bytes from 10.3.100.207: icmp_seq=12 ttl=252 time=0.867 ms
+4096 bytes from 10.3.100.207: icmp_seq=13 ttl=252 time=0.673 ms
+4096 bytes from 10.3.100.207: icmp_seq=14 ttl=252 time=0.645 ms
+4096 bytes from 10.3.100.207: icmp_seq=15 ttl=252 time=0.624 ms
+4096 bytes from 10.3.100.207: icmp_seq=16 ttl=252 time=0.619 ms
+4096 bytes from 10.3.100.207: icmp_seq=17 ttl=252 time=0.634 ms
+4096 bytes from 10.3.100.207: icmp_seq=18 ttl=252 time=0.530 ms
+4096 bytes from 10.3.100.207: icmp_seq=19 ttl=252 time=0.652 ms
+4096 bytes from 10.3.100.207: icmp_seq=20 ttl=252 time=1.00 ms
+
+--- 10.3.100.207 ping statistics ---
+20 packets transmitted, 20 received, 0% packet loss, time 19003ms
+rtt min/avg/max/mdev = 0.530/0.665/1.004/0.099 ms
+
+It is observed that the average time remains almost the same. it is because the time is required only in making of packets and not in transition. And the time required for this remains almost the same. time is mainly consumed at two stages in the physical layer which is almost indepedent of size of the packet.
+
+
+7.
+
+google.com
+195.13.189.45
+
+facebook.com
+173.252.120.6
+
+Verified.
+
+8.
+
+In computer networking, a port is an application-specific or process-specific software construct serving as a communications endpoint in a computer's host operating system. The purpose of ports is to uniquely identify different applications or processes running on a single computer and thereby enable them to share a single physical connection to a packet-switched network like the Internet. In the context of the Internet Protocol, a port is associated with an IP address of the host, as well as the type of protocol used for communication.
+
+http - 80
+https - 443
+ssh - 22
+
+
+9.
+
+80 working
+443, 22, 8080 not working
+
+
+10.
+
+https is a combination of http and ssl/tls
+
+HTTP 	
+URL begins with “http://” 	
+It uses port 80 for communication 	
+Unsecured 	
+Operates at Application Layer 	
+No encryption 	
+No certificates required 	
+
+HTTPS
+URL begins with “https://”
+Secured
+It uses port 443 for communication
+Operates at Transport Layer
+Encryption is present
+Certificates required
+
+
+11.
+
+head@cse.iitkgp.ac.in
+
+12.
+
+It is the ip address of local machine (localhost).
+
+In computer networking, localhost means this computer. It is a hostname that the computer's software and users may employ to access the computer's own network services via its loopback network interface. Using the loopback interface bypasses local network interface hardware.
+
+
+
