@@ -124,7 +124,6 @@ void request_file(string ip,string file,string saveas)
   serverAddr.sin_addr.s_addr = inet_addr(ip.c_str());
   memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);  
   addr_size = sizeof serverAddr;
-  // connect(filesocket, (struct sockaddr *) &serverAddr, addr_size);
   if(connect(filesocket, (struct sockaddr *) &serverAddr, addr_size)<0)
     error("Connect: ");
   send_fname(file);
@@ -135,9 +134,12 @@ void request_file(string ip,string file,string saveas)
     // cout << t << endl;
     for(int i=0;i<t;i++)
       putc(buffer[i],f);
+    if(t<BUFFER_SIZE)
+      break;
   }
   fclose(f);
   close(filesocket);
+  cout << "File saved.\n";
 }
 
 int sock, n;
