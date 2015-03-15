@@ -19,10 +19,15 @@ using namespace std;
 list<string> files;
 vector<string> allfiles;
 
+void error(const char *msg)
+{
+  perror(msg);
+  exit(0);
+}
+
 // code for client for FIS
 int sfd,wsfd;
 char buffer[1024];
-sockaddr_in serverAddr;
 socklen_t addr_size;
 
 void listDir() {
@@ -103,16 +108,18 @@ void view_file_list () {
 void request_file(string ip,string file,string saveas)
 {
   int filesocket;   
-  struct sockaddr_in fileserAddr;
+  struct sockaddr_in serverAddr;
   socklen_t addr_size;
 
   filesocket = socket(PF_INET, SOCK_STREAM, 0);
   serverAddr.sin_family = AF_INET;
-  serverAddr.sin_port = htons(12001);
+  serverAddr.sin_port = htons(12004);
+  cout << "Requesting file from " << ip << "." << endl;
   serverAddr.sin_addr.s_addr = inet_addr(ip.c_str());
   memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);  
-  addr_size = sizeof serverAddr;
-  connect(filesocket, (struct sockaddr *) &serverAddr, addr_size);
+  addr_size = sizeof(serverAddr);
+  if(connect(filesocket, (struct sockaddr *) &serverAddr, addr_size)!=0)
+    error("Connect: ");
 
   FILE *f=fopen(saveas.c_str(),"w");
   char buffer[BUFFER_SIZE];
@@ -125,12 +132,7 @@ void request_file(string ip,string file,string saveas)
   }
   fclose(f);
   close(filesocket);
-}
-
-void error(const char *msg)
-{
-    perror(msg);
-    exit(0);
+  cout << "File saved.\n";
 }
 
 int sock, n;
