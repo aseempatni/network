@@ -93,8 +93,8 @@ void receive_file_list () {
 
 void view_allfile_list () {
   cout << "Files available to download:" << endl;
-    for (std::vector<string>::iterator it = allfiles.begin() ; it != allfiles.end(); ++it){
-        std::cout << ' ' << *it << endl;
+  for (std::vector<string>::iterator it = allfiles.begin() ; it != allfiles.end(); ++it){
+    std::cout << ' ' << *it << endl;
   }
 }
 void view_file_list () {
@@ -105,34 +105,39 @@ void view_file_list () {
   }
 }
 
+int filesocket;
+void send_fname(string fname)
+{
+  char buffer[BUFFER_SIZE];
+  strcpy(buffer,fname.c_str());
+  send(filesocket,buffer,strlen(buffer),0);
+}
+
 void request_file(string ip,string file,string saveas)
 {
-  int filesocket;   
-  struct sockaddr_in serverAddr;
   socklen_t addr_size;
+  sockaddr_in serverAddr;
 
   filesocket = socket(PF_INET, SOCK_STREAM, 0);
   serverAddr.sin_family = AF_INET;
-  serverAddr.sin_port = htons(12004);
-  cout << "Requesting file from " << ip << "." << endl;
+  serverAddr.sin_port = htons(12001);
   serverAddr.sin_addr.s_addr = inet_addr(ip.c_str());
   memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);  
-  addr_size = sizeof(serverAddr);
-  if(connect(filesocket, (struct sockaddr *) &serverAddr, addr_size)!=0)
+  addr_size = sizeof serverAddr;
+  // connect(filesocket, (struct sockaddr *) &serverAddr, addr_size);
+  if(connect(filesocket, (struct sockaddr *) &serverAddr, addr_size)<0)
     error("Connect: ");
-
+  send_fname(file);
   FILE *f=fopen(saveas.c_str(),"w");
   char buffer[BUFFER_SIZE];
   int t;
-  while((t=recv(filesocket, buffer, BUFFER_SIZE, 0))>0)
-  {
+  while((t=recv(filesocket, buffer, BUFFER_SIZE, 0))>0) {
     // cout << t << endl;
     for(int i=0;i<t;i++)
       putc(buffer[i],f);
   }
   fclose(f);
   close(filesocket);
-  cout << "File saved.\n";
 }
 
 int sock, n;
@@ -149,8 +154,8 @@ void connectfis() {
   if (hp==0) error("Unknown host");
 
   bcopy((char *)hp->h_addr, 
-       (char *)&server.sin_addr,
-        hp->h_length);
+   (char *)&server.sin_addr,
+   hp->h_length);
   server.sin_port = htons(12000);
   length=sizeof(struct sockaddr_in);
 }
@@ -182,25 +187,26 @@ int getDetails (string file) {
   if (buffer[0]=='-') return -1;
   return 0;
 }
-void Tokenize(const string& str,
-                      vector<string>& tokens,
-                      const string& delimiters = ":")
-{
-    // Skip delimiters at beginning.
-    string::size_type lastPos = str.find_first_not_of(delimiters, 0);
-    // Find first "non-delimiter".
-    string::size_type pos     = str.find_first_of(delimiters, lastPos);
 
-    while (string::npos != pos || string::npos != lastPos)
-    {
+void Tokenize(const string& str,
+  vector<string>& tokens,
+  const string& delimiters = ":") {
+    // Skip delimiters at beginning.
+  string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+    // Find first "non-delimiter".
+  string::size_type pos     = str.find_first_of(delimiters, lastPos);
+
+  while (string::npos != pos || string::npos != lastPos)
+  {
         // Found a token, add it to the vector.
-        tokens.push_back(str.substr(lastPos, pos - lastPos));
+    tokens.push_back(str.substr(lastPos, pos - lastPos));
         // Skip delimiters.  Note the "not_of"
-        lastPos = str.find_first_not_of(delimiters, pos);
+    lastPos = str.find_first_not_of(delimiters, pos);
         // Find next "non-delimiter"
-        pos = str.find_first_of(delimiters, lastPos);
-    }
+    pos = str.find_first_of(delimiters, lastPos);
+  }
 }
+
 int update_file_list() {
   string s = "UPD";
   connectfis();
@@ -224,6 +230,7 @@ int update_file_list() {
   if (buffer[0]=='-') return -1;
   return 0;
 }
+
 void init () {
   connectfis();
   // printf("Please enter the message: ");
@@ -246,6 +253,7 @@ void init () {
   close(sock);
   update_file_list();
 }
+
 int main(int argc, char *argv[])
 {
   listDir();
