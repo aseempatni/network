@@ -113,7 +113,7 @@ void request_file(string ip,string file,string saveas)
 
   filesocket = socket(PF_INET, SOCK_STREAM, 0);
   serverAddr.sin_family = AF_INET;
-  serverAddr.sin_port = htons(12004);
+  serverAddr.sin_port = htons(12002);
   cout << "Requesting file from " << ip << "." << endl;
   serverAddr.sin_addr.s_addr = inet_addr(ip.c_str());
   memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);  
@@ -121,14 +121,18 @@ void request_file(string ip,string file,string saveas)
   if(connect(filesocket, (struct sockaddr *) &serverAddr, addr_size)!=0)
     error("Connect: ");
 
+  char fi[50];
+  strcpy(fi,file.c_str());
+  sendto(filesocket,fi,file.length(), 0, (struct sockaddr *)&serverAddr,addr_size);
   FILE *f=fopen(saveas.c_str(),"w");
   char buffer[BUFFER_SIZE];
   int t;
   while((t=recv(filesocket, buffer, BUFFER_SIZE, 0))>0)
   {
-    // cout << t << endl;
     for(int i=0;i<t;i++)
       putc(buffer[i],f);
+    if(t<BUFFER_SIZE)
+      break;
   }
   fclose(f);
   close(filesocket);
