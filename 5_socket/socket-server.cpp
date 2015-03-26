@@ -12,79 +12,109 @@
 #include <sys/wait.h>
 #include <fstream>
 #include <stdlib.h>
+#include <errno.h>
+#include <sys/stat.h>
 #define BUFFER_SIZE 1024
 
 using namespace std;
 
-int sfd,wsfd;
-char buffer[1024];
-sockaddr_in serverAddr;
-socklen_t addr_size;  
-void init_server()
-{
-    if(listen(wsfd,5)==0)
-      printf("== Listening\n");
-    else
-      printf("Error\n");
-
-  struct sockaddr_storage serverStorage;
-  addr_size = sizeof(serverStorage);
-  sfd = accept(wsfd, (struct sockaddr *) &serverStorage, &addr_size);
-  printf("Connected\n");
-}
-
-string get_fname()
-{
-  char buffer[BUFFER_SIZE];
-  int t = recv(sfd, buffer, BUFFER_SIZE, 0);
-  string temp(buffer,t);
-  return temp;
-}
-
-void send_file(string file)
-{
-  FILE *f=fopen(file.c_str(),"rb");
-  char buffer[BUFFER_SIZE];
-
-  while(!feof(f))
-  {
-    int sz=fread (buffer,1,BUFFER_SIZE,f);
-    send(sfd,buffer,sz,0);
-  }
-
-  fclose(f);
-  close(wsfd);
-  close(sfd);
-}
+fd_set readset, tempset;
+int maxfd, flags;
+int srvsock, peersock, j, result, result1, sent, len;
+timeval tv;
+char buffer[BUFFER_SIZE];
+sockaddr_in addr;
+struct sockaddr_storage serverStorage;
+socklen_t addr_size = sizeof(serverStorage);
 
 int main(){
-  wsfd = socket(PF_INET, SOCK_STREAM, 0);
-  serverAddr.sin_family = AF_INET;
-  serverAddr.sin_port = htons(12002);
-  serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-  memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);
+  srvsock = socket(PF_INET, SOCK_STREAM, 0);
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(12002);
+  addr.sin_addr.s_addr = INADDR_ANY;
+  memset(addr.sin_zero, '\0', sizeof addr.sin_zero);
   int iSetOption = 1;
-  setsockopt(wsfd, SOL_SOCKET, SO_REUSEADDR, (char*)&iSetOption,
+  setsockopt(srvsock, SOL_SOCKET, SO_REUSEADDR, (char*)&iSetOption,
         sizeof(iSetOption));
-  if(bind(wsfd, (struct sockaddr *) &serverAddr, sizeof(serverAddr)))
+  if(bind(srvsock, (struct sockaddr *) &addr, sizeof(addr)))
   {
     cout << "Error: Could not bind\n";
     exit(1);
   }
 
-  string fname;
-  while(1)
-  {
-    init_server();
-    if(!fork())
-    {
-      close(wsfd);
-      fname = get_fname();
-      cout << fname << " requested" << endl;
-      send_file(fname);
-      cout << fname << " sent" << endl;
-      exit(0);
-    }
-  }
-  return 0;
+  if(listen(srvsock,5)==0)
+      printf("== Listening\n");
+    else
+      printf("Error\n");
+  FD_ZERO(&readset);
+  FD_SET(srvsock, &readset);
+  maxfd = srvsock;
+
+  do {
+     memcpy(&tempset, &readset, sizeof(tempset));
+     tv.tv_sec = 1000;
+     tv.tv_usec = 0;
+     result = select(maxfd + 1, &tempset, NULL, NULL, &tv);
+
+     if (result == 0) {
+        printf("select() timed out!\n");
+     }
+     else if (result < 0 && errno != EINTR) {
+        printf("Error in select(): %s\n", strerror(errno));
+     }
+     else if (result > 0) {
+
+        if (FD_ISSET(srvsock, &tempset)) {
+           len = sizeof(addr);
+           peersock = accept(srvsock, (struct sockaddr *) &serverStorage, &addr_size);
+           if (peersock < 0) {
+              printf("Error in accept(): %s\n", strerror(errno));
+           }
+           else {
+              FD_SET(peersock, &readset);
+              maxfd = (maxfd < peersock)?peersock:maxfd;
+           }
+           FD_CLR(srvsock, &tempset);
+        }
+
+        for (j=0; j<maxfd+1; j++) {
+           if (FD_ISSET(j, &tempset)) {
+            result = recv(j, buffer, BUFFER_SIZE, 0);
+            string fname(buffer,result);
+
+            if(result > 0) {
+               buffer[result] = 0;
+               printf("Opening: %s\n", buffer);
+               sent = 0;
+
+                  FILE *f=fopen(fname.c_str(),"rb");
+		struct stat st;
+		int size;
+		stat(fname.c_str(), &st);
+		sprintf(buffer,"%d",st.st_size);
+	//	send(j,buffer,strlen(buffer),0);
+		
+                  while(!feof(f))
+                  {
+                    result1=fread (buffer,1,BUFFER_SIZE,f);
+                    int sb = send(j,buffer,result1,0);
+			cout << result1 << endl;
+                  }
+		  fclose(f);
+			cout << "Close File\n" << endl;
+                  if (result1 > 0)
+                     sent += result1;
+                  else if (result1 < 0 && errno != EINTR)
+                     break;
+		cout << "File sent: " << result1 << endl;
+                 close(j);
+                 FD_CLR(j, &readset);
+		}
+              else {
+                 printf("Error in recv(): %s\n", strerror(errno));
+              }
+           }      // end if (FD_ISSET(j, &tempset))
+        }      // end for (j=0;...)
+     }      // end else if (result > 0)
+  } while (1);
 }

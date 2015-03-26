@@ -120,7 +120,7 @@ void request_file(string ip,string file,string saveas)
 
   filesocket = socket(PF_INET, SOCK_STREAM, 0);
   serverAddr.sin_family = AF_INET;
-  serverAddr.sin_port = htons(12001);
+  serverAddr.sin_port = htons(12002);
   serverAddr.sin_addr.s_addr = inet_addr(ip.c_str());
   memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);  
   addr_size = sizeof serverAddr;
@@ -130,13 +130,24 @@ void request_file(string ip,string file,string saveas)
   FILE *f=fopen(saveas.c_str(),"w");
   char buffer[BUFFER_SIZE];
   int t;
-  while((t=recv(filesocket, buffer, BUFFER_SIZE, 0))>0) {
-    // cout << t << endl;
+//  recv(filesocket, buffer, BUFFER_SIZE, 0);
+// int fsize = atoi(buffer);
+ // cout << "Hey I got the file size: " << buffer << endl;
+//  int fgetsize = 0;
+  while((t=recv(filesocket, buffer, BUFFER_SIZE, MSG_WAITALL))>40) {
+ // fgetsize+=t;
+ // cout << fgetsize << endl;
+    //cout << t << endl;
     for(int i=0;i<t;i++)
       putc(buffer[i],f);
-    if(t<BUFFER_SIZE)
-      break;
+//    if(t<BUFFER_SIZE) {
+    //	printf("%d",t);
+  //  	break;
+//	  if (fgetsize==fsize) 
+//	  break;
+    //}
   }
+//  cout << "Out of loop." << endl;
   fclose(f);
   close(filesocket);
   cout << "File saved.\n";
@@ -158,6 +169,8 @@ void connectfis() {
   bcopy((char *)hp->h_addr, 
    (char *)&server.sin_addr,
    hp->h_length);
+   
+  server.sin_addr.s_addr = inet_addr("10.5.27.181");
   server.sin_port = htons(12000);
   length=sizeof(struct sockaddr_in);
 }
@@ -247,8 +260,8 @@ void init () {
   if (n < 0) error("Sendto");
   n = recvfrom(sock,buffer,BUFFER_SIZE,0,(struct sockaddr *)&from, &length);
   if (n < 0) error("recvfrom");
-   printf("Datagram's IP address is: %s\n", inet_ntoa(from.sin_addr));
-   printf("Datagram's port is: %d\n", (int) ntohs(from.sin_port));
+ //  printf("Datagram's IP address is: %s\n", inet_ntoa(from.sin_addr));
+ //  printf("Datagram's port is: %d\n", (int) ntohs(from.sin_port));
 
   write(1,"Got an ack: ",12);
   write(1,buffer,n);
@@ -274,6 +287,7 @@ int main(int argc, char *argv[])
     scanf("%d",&input);
     switch(input) {
       case 1:
+      init();
         update_file_list();
         break;
       case 2: {

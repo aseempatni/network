@@ -44,7 +44,7 @@ string buftostr(char* buf, int size) {
 }
 
 void get_ip(char* buf, int size) {
-    string ip = "127.0.0.1";
+    string ip;// = "127.0.0.1";
     string file = buftostr(buf,size);
     cout << "Received request for " << file << endl;
     if ( filemap.find(file) == filemap.end() ) {
