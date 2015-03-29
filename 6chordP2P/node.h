@@ -37,6 +37,7 @@ class node {
 	int port;
 	int sock, length, n;
 	socklen_t fromlen;
+
 	struct sockaddr_in my_sock; // bound to node
 	struct sockaddr_in other_sock; // used to send and receive msg
 	char buf[MAX_BUFFER_SIZE];
@@ -56,7 +57,7 @@ public:
 	int addfile (string filename, string ip);
 	string get_addr(string filename);
 	int download(string filename, string saveas);
-	void download_file (string filename, string savaas, string ip, int port);
+	bool download_file (string filename, string savaas, string ip, int port);
 	void search(string filename);
 	void forward_msg(node* to, message m);
 	void print();
@@ -73,6 +74,7 @@ private:
 	node* predecessor_node;
 	void process_msg(message msg);
 	std::map<string, string> filemap;
+	// std::map<string, string> download_queue;
 };
 
 #endif
