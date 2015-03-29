@@ -1,33 +1,48 @@
 #include <iostream>
-
+#include "utils.h"
 using namespace std;
 
-typedef unsigned long long int llu;
-
 class node {
-	private:
+	string ip;
+	int port;
+	public:
+		node();
 		node* successor();
 		node* predecessor();
+	private:
+		node* successor_node;
+		node* predecessor_node;
+		void query_neighbors();
+
 };
 
-llu hash(string p, int len) { // consistent hashing
-	llu h = 0;
-	int i;
-	for (i = 0; i < len; i++) {
-		h += p[i];
-		h += (h << 10);
-		h ^= (h >> 6);
-	}
-	h += (h << 3);
-	h ^= (h >> 11);
-	h += (h << 15);
-	return h;
+node* node::successor() {
+	return this-> successor_node;
+}
+node* node::predecessor() {
+	return this-> predecessor_node;
+}
+node::node() {
+	cout << "New node created." << endl;
+	this->query_neighbors();
+}
+
+void node::query_neighbors() {
+	cout << "Querying neighbors" << endl;
+	// Ask node 0 for the neighbors
+
 }
 
 node* search(llu file_id);
 llu map_file_to_node (llu file_id);
 bool download (string filename, node* server);
 
+
+
+
 int main () {
-	
+	node self;
 }
+
+
+
