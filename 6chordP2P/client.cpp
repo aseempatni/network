@@ -2,7 +2,10 @@
 #include "utils.h"
 #include <stdlib.h>
 
+#define SHARE 1
+#define SEARCH 2
 #define DOWNLOAD 3
+#define STATS 4
 
 // Declarators
 
@@ -11,6 +14,7 @@ llu map_file_to_node (llu file_id);
 bool download (string filename, node* server);
 
 int main (int argc, char* argv[]) {
+
 	if (argc!=2) {
 		cout << "Usage: ./client <port>" << endl;
 		exit(1);
@@ -24,23 +28,31 @@ int main (int argc, char* argv[]) {
     	exit(0);
     }
     else {
-		// self.recv_msg();
-		// self.send_msg("127.0.0.1",12000,"NBR","who's my neighbor?");
 		if(fork()) {
 			while(1) {
 				self.recv_msg();
+				// self.print();
 			}
 		}
 		while (1) {
 			cout << "What would you like to do?" << endl;
 			// cout << "0  Nothing ()" << endl;
-			cout << "1  Update my neighbors." << endl;
-			cout << "2  Share my files." << endl;
+			cout << "1  Share my files." << endl;
+			cout << "2  Search a file." << endl;
 			cout << "3  Download a file." << endl;
+			cout << "4  Get self Stats" << endl;
 			int input;
 			cin >> input;
 			string filename, saveas;
 			switch(input) {
+				case SHARE:
+					self.req_share_files();
+					break;
+				case SEARCH:
+					cout << "Enter filename: ";
+					cin >> filename;
+					self.search(filename);
+					break;
 				case DOWNLOAD:
 					cout << "Enter filename: ";
 					cin >> filename;
@@ -48,8 +60,8 @@ int main (int argc, char* argv[]) {
 					cin >> saveas;
 					self.download(filename, saveas);
 					break;
-				case 1:
-					self.send_msg("127.0.0.1",12000,"NBR","who's my neighbor?");
+				case STATS:
+					self.printreq();
 					break;
 				case 0:
 				break;

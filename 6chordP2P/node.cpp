@@ -13,6 +13,7 @@ node::node(int port = 12000) {
 	successor_node = NULL;
 	predecessor_node = NULL;
 	this->port = port;
+	ip = "127.0.0.1"; // needs to be corrected
 	string pstr = tostr(port);
 	id = hash(pstr,pstr.size() );
 	cout << "New node created at port " << port << endl;
@@ -23,24 +24,24 @@ node::node(int port = 12000) {
 }
 
 node::node(struct sockaddr_in me) {
+	ip = "127.0.0.1"; // needs to be corrected
 	my_sock = me;
 	port =  (int) ntohs(me.sin_port);
-	ip = inet_ntoa(other_sock.sin_addr);
+	ip = inet_ntoa(me.sin_addr);
 	string pstr = tostr(port);
 	id = hash(pstr,pstr.size() );
 }
 
 void node::update_neighbors() {
 	cout << "Querying neighbors" << endl;
-	send_msg("127.0.0.1",port,"NBR","who's my neighbor?");
+	send_msg("127.0.0.1",12000,"NBR",getaddr());
 	// Ask node 0 for the neighbors
 }
 
 void node::recv_msg() {
 	n = recvfrom(sock,buf,1024,0,(struct sockaddr *)&other_sock,&fromlen);
-	cout << endl << "==> message" << endl;
-	printf("IP address is: %s\n", inet_ntoa(other_sock.sin_addr));
-	printf("Port is: %d\n", (int) ntohs(other_sock.sin_port));
+	cout << endl << "==> " << buf << endl;
+	printf("Received from : %s:%d\n", inet_ntoa(other_sock.sin_addr), (int) ntohs(other_sock.sin_port));
 	if (n < 0) error("recvfrom");
 	message msg(buf, n);
 	msg.from = other_sock;
@@ -65,11 +66,11 @@ void node::init_udp() {
 	my_sock.sin_addr.s_addr=INADDR_ANY;
 	my_sock.sin_port=htons(this->port);
 
-    int yes = 1;
-    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
-        perror("setsockopt");
-        exit(1);
-    }
+	int yes = 1;
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+		perror("setsockopt");
+		exit(1);
+	}
 
 	if (bind(sock,(struct sockaddr *)&my_sock,length)<0) 
 		error("binding");
@@ -81,7 +82,9 @@ void node::init_udp() {
 
 void node::send_msg(string ip, int port, string type, string text) {
 	other_sock.sin_family = AF_INET;
-	other_sock.sin_addr.s_addr = inet_addr(ip.c_str());
+	// other_sock.sin_addr.s_addr = inet_addr(ip.c_str());
+	other_sock.sin_addr.s_addr = inet_addr("127.0.0.1");
+
 	other_sock.sin_port = htons(port);
 	length=sizeof(struct sockaddr_in);
 
@@ -90,6 +93,7 @@ void node::send_msg(string ip, int port, string type, string text) {
 
 	n=sendto(sock,buf,
 		strlen(buf),0,(const struct sockaddr *)&other_sock,length);
+	cout << "<== " << buf << endl;
 	if (n < 0) error("Sendto");
 }
 
@@ -101,6 +105,7 @@ void node::send_msg(struct sockaddr_in other_sock, string type, string text) {
 
 	n=sendto(sock,buf,
 		strlen(buf),0,(const struct sockaddr *)&other_sock,length);
+	cout << "<== " << buf << endl;
 	if (n < 0) error("Sendto");
 }
 
@@ -137,105 +142,236 @@ llu getPortHash(int port) {
 	return hash(sport, sport.size());
 }
 
-void node::process_msg(message msg) {
-	int inport = (int) ntohs(msg.from.sin_port);
-	llu qport = getPortHash(inport);
-	if (strcmp(msg.type.c_str(), "NBR")==0) {
+void node::handle_neighbor(message msg) {
+	int inport = atoi(msg.tokens[2].c_str());
+	string inip = msg.tokens[1];
+	string req_addr = encode_addr(inip, inport);
+	llu qport = hash(req_addr);
+	
+	struct sockaddr_in requester; 
+	requester.sin_family=AF_INET;
+	requester.sin_addr.s_addr=inet_addr("127.0.0.1"); // needs to be changed
+	requester.sin_port=htons(inport);
 		// Request for neighbor
-		if (this-> predecessor()==NULL && this->successor()==NULL) {
-			this-> predecessor_node = new node(msg.from);
-			this-> successor_node = new node(msg.from);
-			send_msg(msg.from, "NBP", tostr(port));
-			send_msg(msg.from, "NBS", tostr(port));
-		}
-		else {
+	if (this-> predecessor()==NULL && this->successor()==NULL) {
+		// beginning
+		this-> predecessor_node = new node(msg.from);
+		this-> successor_node = new node(msg.from);
+		send_msg(msg.from, "NBP", getaddr());
+		send_msg(msg.from, "NBS", getaddr());
+	}
+	else {
+		// later
+		if(id < this-> successor()->id && id > predecessor()->id) {
+			// normal case
 			if(qport>this-> successor()->id) {
-				send_msg(successor()->my_sock, "NBR", tostr(qport));
+				forward_msg(successor(),msg);
 			}
 			else if(qport<this-> predecessor()->id) {
-				send_msg(predecessor()->my_sock, "NBR", tostr(qport));
+				forward_msg(predecessor(),msg);
 			}
 			else if(qport<this-> successor()->id && qport > this->id) {
-				this-> successor_node = new node(msg.from);
-				send_msg(successor()->my_sock, "NBP", tostr(qport));
-				send_msg(msg.from, "NBP", tostr(port));
-				send_msg(msg.from, "NBS", tostr(this-> successor()->port));
+				send_msg(successor()->my_sock, "NBP", req_addr);
+				send_msg(requester, "NBP", getaddr());
+				send_msg(requester, "NBS", this-> successor()->getaddr());
+				this-> successor_node = new node(requester);
 			}
 			else if(qport>this-> predecessor()->id && qport < this->id) {
-				this-> successor_node = new node(msg.from);
-				send_msg(predecessor()->my_sock, "NBS", tostr(qport));
-				send_msg(msg.from, "NBS", tostr(port));
-				send_msg(msg.from, "NBP", tostr(this-> predecessor()->port));
+				send_msg(predecessor()->my_sock, "NBS", req_addr);
+				send_msg(requester, "NBS", getaddr());
+				send_msg(requester, "NBP", this-> predecessor()->getaddr());
+				this-> predecessor_node = new node(requester);
 			}
-			else send_msg(msg.from, "ANS", "I don't know.");
 		}
-		if(count==MAX_CLIENTS) send_msg(msg.from, "RFL", "");
+		else if(id > this-> successor()->id) {
+			// boundary case
+			if(qport<this-> successor()->id || qport> id) {
+				send_msg(successor()->my_sock, "NBP", req_addr);
+				send_msg(requester, "NBP", getaddr());
+				send_msg(requester, "NBS", this-> successor()->getaddr());
+				this-> successor_node = new node(requester);
+			}
+			else if(qport<this-> predecessor()->id) {
+				forward_msg(predecessor(),msg);
+			}
+			else if(qport>this-> predecessor()->id && qport < this->id) {
+				send_msg(predecessor()->my_sock, "NBS", req_addr);
+				send_msg(requester, "NBS", getaddr());
+				send_msg(requester, "NBP", this-> predecessor()->getaddr());
+				this-> predecessor_node = new node(requester);
+			}				
+		}
+		else if(id < this-> predecessor()->id) {
+			// boundary case
+			if(qport>this-> predecessor()->id || qport<id) {
+				send_msg(predecessor()->my_sock, "NBS", req_addr);
+				send_msg(requester, "NBS", tostr(port));
+				send_msg(requester, "NBP", this-> predecessor()->getaddr());
+				this-> predecessor_node = new node(requester);
+			}
+			else if(qport>this-> successor()->id) {
+				forward_msg(successor(),msg);
+			}
+			else if(qport<this-> successor()->id && qport > this->id) {
+				send_msg(successor()->my_sock, "NBP", req_addr);
+				send_msg(requester, "NBP", getaddr());
+				send_msg(requester, "NBS", this-> successor()->getaddr());
+				this-> successor_node = new node(requester);
+			}				
+		}
+		else send_msg(requester, "ANS", "I don't know.");
+	}
+	if(count==MAX_CLIENTS) send_msg(msg.from, "RFL", "");
+}
+
+void node::process_msg(message msg) {
+	int inport = atoi(msg.text.c_str());
+	llu qport = getPortHash(inport);
+	if (strcmp(msg.type.c_str(), "NBR")==0) {
+		handle_neighbor(msg);
 	}
 	else if (strcmp(msg.type.c_str(), "RFL")==0) { 
 		// Request file list after all nodes have been added
-		list <string> files = listDir();
-		for(std::list<string>::iterator list_iter = files.begin(); 
-			list_iter != files.end(); list_iter++)
-		{
-			// Send the filenames to respective nodes
-			send_msg(msg.from, "ADF", *list_iter);
-		}
+
 	}
 	else if (strcmp(msg.type.c_str(), "NBP")==0) { 
 		// Change successor
-		this->predecessor_node->port = msg.text;
+		sockaddr_in new_sock;
+		new_sock.sin_family=AF_INET;
+		new_sock.sin_addr.s_addr=inet_addr(msg.tokens[1].c_str());
+		new_sock.sin_port=htons(atoi(msg.tokens[2].c_str()));
+		this->predecessor_node = new node(new_sock);	
 	}
 	else if (strcmp(msg.type.c_str(), "NBS")==0) { 
 		// Change predecessor
-		this->successor_node->port = msg.text;
-
+		sockaddr_in new_sock;
+		new_sock.sin_family=AF_INET;
+		new_sock.sin_addr.s_addr=inet_addr(msg.tokens[1].c_str());
+		new_sock.sin_port=htons(atoi(msg.tokens[2].c_str()));
+		this->successor_node = new node(new_sock);	
 	}
-	else if (strcmp(msg.type.c_str(), "ADF")==0) { 
+	else if (strcmp(msg.type.c_str(), "ADDF")==0) { 
 		// Add file to hash
-		addfile(msg.text, tostr(qport));
+		llu file_id = hash(msg.text);
+		cout << file_id << endl;
+		if(id>predecessor()->id) {
+			// Normal case
+			if(file_id>predecessor()->id && file_id < id) {
+				addfile(msg.tokens[1],msg.tokens[2]+":"+msg.tokens[3]);
+			}
+			else forward_msg(successor(), msg);
+		}
+		else {
+			// Boundary condition
+			if(file_id>predecessor()->id || file_id < id) {
+				addfile(msg.tokens[1],msg.tokens[2]+":"+msg.tokens[3]);
+			}
+			else {
+				forward_msg(successor(), msg);
+			}
+		}
 	}
-	else if (strcmp(msg.type.c_str(), "SEA")==0) {
+	else if (strcmp(msg.type.c_str(), "SEARCH")==0) {
 		// Search for a file
-		char *end;
-		llu file_id = strtol(msg.text.c_str(), &end, 10);
-		if(file_id > successor()->id) 
-			forward_msg(successor(),msg);
-		else if(file_id < predecessor()->id) 
-			forward_msg(predecessor(),msg);
-		else if (file_id > id && file_id < successor()->id) 
-			send_msg(msg.from, "ANS", tostr(successor()->port));
-		else if (file_id < id && file_id > predecessor()->id) 
-			send_msg(msg.from, "ANS", tostr(port));
+		llu file_id = hash(msg.text);
+		cout << file_id << endl;
+		string addr;
+		if(id>predecessor()->id) {
+			// Normal case
+			if(file_id>predecessor()->id && file_id < id) {
+				addr = get_addr(msg.text);
+				send_msg(msg.tokens[2],atoi(msg.tokens[3].c_str()), "FOUND",msg.tokens[1] + ":"+ addr);
+			}
+			else forward_msg(successor(), msg);
+		}
+		else {
+			// Boundary condition
+			if(file_id>predecessor()->id || file_id < id) {
+				addr = get_addr(msg.text);
+				send_msg(msg.tokens[2],atoi(msg.tokens[3].c_str()), "FOUND",msg.tokens[1] + ":" + addr);
+			}
+			else {
+				forward_msg(successor(), msg);
+			}
+		}
+	}
+	else if (strcmp(msg.type.c_str(), "FOUND")==0) {
+		// Search for a file
+		string addr;
+		string filename = msg.tokens[1];
+		string fip = msg.tokens[2];
+		string fport = msg.tokens[3];
+		cout << "File " << filename << " found at " << fip << ":" << fport << endl;
+	}
+	else if (strcmp(msg.type.c_str(), "PRINT")==0) {
+		// Search for a file
+		print();
+	}
+	else if (strcmp(msg.type.c_str(), "SHARE")==0) {
+		// Search for a file
+		share_files();
 	}
 	else {
 		// Anything else
 	}
 }
 
-void node::share_files() {
-
+void node::req_share_files() {
+	send_msg(my_sock, "SHARE", tostr(port));
 }
 
-void print() {
-	// cout << "IP: " << ip << endl;
-	cout << "Port: " << port << endl;
+void node::share_files() {
+	list <string> files = listDir();
+	for(std::list<string>::iterator list_iter = files.begin(); 
+		list_iter != files.end(); list_iter++)
+	{
+		// Send the filenames to respective nodes
+		llu file_id = hash(*list_iter);
+		// cout << file_id << endl;
+		string temp = *list_iter ;
+		temp += ":" + getaddr();
+		send_msg(ip,port ,"ADDF", temp); // sending to self
+	}
+}
+
+void node::printIndex() {
+	std::cout << "File Mapping:\n";
+	std::map<string,string>::iterator it;
+	for (it=filemap.begin(); it!=filemap.end(); ++it)
+		std::cout << "  " << it->first << " => " << it->second << '\n';
+}
+
+string node::getaddr() {
+	return ip+":"+tostr(port);
+}
+
+void node::print() {
+	cout << endl;
+	cout << "=========================" << endl;
+	cout << "P: " << predecessor()->getaddr() << endl;
+	cout << "ID: " << predecessor()->id << endl;
+	cout << "\t^" << endl;
+	cout << "\t|" << endl;
+
+	cout << "Self: " << getaddr() << endl;
 	cout << "ID: " << id << endl;
+	cout << "\t|" << endl;
+	cout << "\tv" << endl;
+	cout << "S: " << successor()->getaddr() << endl;
+	cout << "ID: " << successor()->id << endl;
+	cout << "=========================" << endl;
+	printIndex();
+	cout << "=========================" << endl;
+}
 
-	cout << "Successor: " << endl;
-	if(successor())
-		successor()->print();
-	else
-		cout << "NULL" << endl;
-
-	cout << "Predecessor: " << endl;
-	if(predecessor())
-		predecessor()->print();
-	else
-		cout << "NULL" << endl;
+void node::printreq () {
+	send_msg(my_sock, "PRINT", tostr(port));
 }
 
 void node::forward_msg(node* to, message m) {
-	send_msg(to->my_sock,m.type,m.text);
+	string body = m.msg.substr(m.tokens[0].size()+1);
+	cout << body << endl;
+	send_msg(to->my_sock,m.type, body);
 }
 
 void node::showFileMap() {
@@ -245,18 +381,19 @@ void node::showFileMap() {
 		std::cout << it->second << " => " << it->first << '\n';
 }
 
-int node::addfile (string filename, string ip) {
-	filemap.insert ( std::pair<string,string>(filename,ip) );
+int node::addfile (string filename, string addr) {
+	cout << "adding to index" << endl;
+	filemap.insert ( std::pair<string,string>(filename,addr) );
 }
 
-string node::get_ip(string filename) {
+string node::get_addr(string filename) {
 	string ip;
 	cout << "Received request for " << filename << endl;
 	if ( filemap.find(filename) == filemap.end() ) {
 		cout << "File not found." << endl;
-		sprintf (buf, "-");
+		return "-";
 	} else {
-		strcpy(buf, filemap[filename].c_str());
+		return filemap[filename];
 	}
 }
 
@@ -270,7 +407,8 @@ int node::download(string filename, string saveas) {
 	download_file(filename, saveas, ip, port);
 }
 
-node* node::search(llu file_id) {
+void node::search(string filename) {
+	send_msg(my_sock, "SEARCH", filename + ":" + getaddr());
 }
 
 void node::run_file_server() {

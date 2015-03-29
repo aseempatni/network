@@ -27,7 +27,7 @@
 #define REAL 101
 
 #define MAX_BUFFER_SIZE 1024
-
+#define MAX_CLIENTS 2
 using namespace std;
 
 class node {
@@ -54,20 +54,25 @@ public:
 	void update_neighbors();
 	void showFileMap();
 	int addfile (string filename, string ip);
-	string get_ip(string filename);
+	string get_addr(string filename);
 	int download(string filename, string saveas);
 	void download_file (string filename, string savaas, string ip, int port);
-	node* search(llu file_id);
+	void search(string filename);
 	void forward_msg(node* to, message m);
 	void print();
+	void printreq();
+
 	void share_files();
+	void req_share_files();
+
+	void handle_neighbor(message msg);
+	string getaddr();
+	void printIndex();
 private:
 	node* successor_node;
 	node* predecessor_node;
 	void process_msg(message msg);
 	std::map<string, string> filemap;
 };
-
-
 
 #endif
