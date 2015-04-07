@@ -11,7 +11,7 @@ location* node::predecessor() {
 
 void node::run() {
 	init_udp();
-	if(port!=12000) {
+	if(port!=9003) {
 		update_neighbors();
 		update_fingers();
 	}
@@ -36,30 +36,34 @@ void node::run() {
 				cout << "2  Search a file." << endl;
 				cout << "3  Download a file." << endl;
 				cout << "4  Get Stats" << endl;
-				int input;
+				cout << "5  Leave" << endl;
+                int input;
 				cin >> input;
 				string filename, saveas;
 				switch(input) {
 					case SHARE:
-						req_share_files();
+					req_share_files();
 					break;
-						case SEARCH:
-						cout << "Enter filename: ";
-						cin >> filename;
-						search(filename);
-						break;
+					case SEARCH:
+					cout << "Enter filename: ";
+					cin >> filename;
+					search(filename);
+					break;
 					case DOWNLOAD:
-						cout << "Enter filename: ";
-						cin >> filename;
-						cout << "Save as: ";
-						cin >> saveas;
-						download(filename, saveas);
-						break;
+					cout << "Enter filename: ";
+					cin >> filename;
+					cout << "Save as: ";
+					cin >> saveas;
+					download(filename, saveas);
+					break;
 					case STATS:
-						printreq();
-						break;
-					case 0:
-						break;
+					printreq();
+					break;
+                    case LEAVE:
+                    leave_req();
+                    break;
+                    case 0:
+					break;
 				}
 			}	
 			exit(0);
@@ -67,7 +71,7 @@ void node::run() {
 	}
 }
 
-node::node(int port = 12000) :location("127.0.0.1",port){
+node::node(int port = 9003) :location("127.0.0.1",port){
 	ip = "127.0.0.1";
 	my_sock.sin_family=AF_INET;
 	my_sock.sin_addr.s_addr=inet_addr(ip.c_str());
@@ -87,7 +91,7 @@ node::node(int port = 12000) :location("127.0.0.1",port){
 
 void node::update_neighbors() {
 	cout << "Querying neighbors" << endl;
-	send_msg("127.0.0.1",12000,"NBR",getaddr());
+	send_msg("127.0.0.1",9003,"NBR",getaddr());
 	// Ask node 0 for the neighbors
 }
 
@@ -95,11 +99,11 @@ void node::update_ft (location* loc) {
 	llu x;
 	// update self finger table
 	for(int i=0; i<MBIT; i++) {
-		x = id + (llu)pow(2,i) % MAX_ID;
+		x = (id + (llu)pow(2,i)) % MAX_ID;
 		// need to handle boundary case here
-		if(finger[i]->id > x) {
+		if(finger[i]->id >= x) {
 			// Normal case
-			if((finger[i]->id == id) || loc->id > x && loc->id < finger[i]->id) {
+			if(loc->id >= x && loc->id < finger[i]->id) {
 				finger[i] = loc;
 				printf("Finger[%d] = ",i+1);
 				cout << finger[i]->getaddr() << " ";
@@ -108,7 +112,7 @@ void node::update_ft (location* loc) {
 		}
 		else {
 			// boundary case
-			if(loc->id > x || loc->id < finger[i]->id) {
+			if(loc->id >= x || loc->id < finger[i]->id) {
 				finger[i] = loc;
 				printf("Finger[%d] = ",i+1);
 				cout << finger[i]->getaddr() << " ";
@@ -119,19 +123,21 @@ void node::update_ft (location* loc) {
 	}
 	// signal the joining node to update its finger table
 	for(int i=0; i<MBIT; i++) {
-		x = loc->id + (llu)pow(2,i)%MAX_ID;
+		x = (loc->id + (llu)pow(2,i))%MAX_ID;
 		// need to handle boundary case here
 		if(predecessor()->id < id) {
 			// Normal case
-			if(x<id && x>predecessor()->id) {
+			if(x<=id && x>predecessor()->id) {
+				cout << "1" << endl;
 				send_msg(loc,"ADD_FINGER", tostr(i) + ":" + getaddr());
 				// break;
 			}
 		}
 		else {
 			// boundary case
-			if(id > x || predecessor()->id > x) {
-				send_msg(loc,"ADD_FINGER", getaddr());
+			if(id >= x || predecessor()->id < x) {
+				cout << "2" << endl;
+				send_msg(loc,"ADD_FINGER", tostr(i) + ":" + getaddr());
 				// break;
 			}
 		}
@@ -139,9 +145,10 @@ void node::update_ft (location* loc) {
 }
 
 void node::update_fingers() {
-	cout << "Updating finger table" << endl;
 	sleep(1);
+	cout << "Updating finger table" << endl;
 	send_msg(my_sock,"CLI_UPD_FINGER",getaddr());
+	// share_files();
 	// Ask node 0 for the neighbors
 }
 
@@ -154,6 +161,10 @@ void node::recv_msg() {
 	msg.from = other_sock;
 	process_msg(msg);
 }
+
+void node::leave_req() {
+	send_msg(my_sock, "LEAVE", tostr(port)); 
+} 
 
 void node::init_udp() {
 	sock=socket(AF_INET, SOCK_DGRAM, 0);
@@ -212,11 +223,12 @@ void node::send_msg(location *loc, string type, string text) {
 	send_msg(loc->my_sock, type, text);
 }
 
-list<string> listDir() {
+list<string> node::listDir() {
 	list<string> files;
 	DIR *d;
 	struct dirent *dir;
-	d = opendir(".");
+	string path = "./"+folder;
+	d = opendir(path.c_str());
 	if (d) {
 		while ((dir = readdir(d)) != NULL) {
 			if (dir->d_type == DT_REG) {
@@ -320,15 +332,25 @@ void node::process_msg(message msg) {
 		llu file_id = hash(msg.text);
 		if(id>predecessor()->id) {
 			// Normal case
-			if(file_id>predecessor()->id && file_id < id) 
+			if(file_id>predecessor()->id && file_id <= id) 
 				addfile(msg.tokens[1],msg.tokens[2]+":"+msg.tokens[3]);
-			else forward_msg(successor(), msg);
+			else {
+				if (closest_successor(file_id)==this) 
+					forward_msg(successor(), msg);
+				else
+					forward_msg(closest_successor(file_id), msg);
+			}
 		}
 		else {
 			// Boundary condition
-			if(file_id>predecessor()->id || file_id < id) 
+			if(file_id>predecessor()->id || file_id <= id) 
 				addfile(msg.tokens[1],msg.tokens[2]+":"+msg.tokens[3]);
-			else forward_msg(successor(), msg);
+			else {
+				if (closest_successor(file_id)==this) 
+					forward_msg(successor(), msg);
+				else
+					forward_msg(closest_successor(file_id), msg);
+			}
 		}
 	}
 	else if (strcmp(msg.type.c_str(), "SEARCH")==0) {
@@ -338,19 +360,29 @@ void node::process_msg(message msg) {
 		string addr;
 		if(id>predecessor()->id) {
 			// Normal case
-			if(file_id>predecessor()->id && file_id < id) {
+			if(file_id>predecessor()->id && file_id <= id) {
 				addr = get_addr(msg.text);
 				send_msg(msg.tokens[2],atoi(msg.tokens[3].c_str()), "FOUND",msg.tokens[1] + ":"+ addr);
 			}
-			else forward_msg(successor(), msg);
+			else {
+				if (closest_successor(file_id)==this) 
+					forward_msg(successor(), msg);
+				else
+					forward_msg(closest_successor(file_id), msg);
+			}
 		}
 		else {
 			// Boundary condition
-			if(file_id>predecessor()->id || file_id < id) {
+			if(file_id>predecessor()->id || file_id <= id) {
 				addr = get_addr(msg.text);
 				send_msg(msg.tokens[2],atoi(msg.tokens[3].c_str()), "FOUND",msg.tokens[1] + ":" + addr);
 			}
-			else forward_msg(successor(), msg);
+			else {
+				if (closest_successor(file_id)==this) 
+					forward_msg(successor(), msg);
+				else
+					forward_msg(closest_successor(file_id), msg);
+			}
 		}
 	}
 	else if (strcmp(msg.type.c_str(), "DWLD")==0) {
@@ -364,7 +396,12 @@ void node::process_msg(message msg) {
 				addr = get_addr(msg.text);
 				send_msg(msg.tokens[2],atoi(msg.tokens[3].c_str()), "DWLD_FROM",msg.tokens[1] + ":"+ addr +":"+ msg.tokens[4]);
 			}
-			else forward_msg(successor(), msg);
+			else {
+				if (closest_successor(file_id)==this) 
+					forward_msg(successor(), msg);
+				else
+					forward_msg(closest_successor(file_id), msg);
+			}
 		}
 		else {
 			// Boundary condition
@@ -372,7 +409,12 @@ void node::process_msg(message msg) {
 				addr = get_addr(msg.text);
 				send_msg(msg.tokens[2],atoi(msg.tokens[3].c_str()), "DWLD_FROM",msg.tokens[1] + ":" + addr +":"+ msg.tokens[4]);
 			}
-			else forward_msg(successor(), msg);
+			else {
+				if (closest_successor(file_id)==this) 
+					forward_msg(successor(), msg);
+				else
+					forward_msg(closest_successor(file_id), msg);
+			}
 		}
 	}
 	else if (strcmp(msg.type.c_str(), "FOUND")==0) {
@@ -400,6 +442,10 @@ void node::process_msg(message msg) {
 		// Share files, add them to respective hash
 		share_files();
 	}
+	else if (strcmp(msg.type.c_str(), "LEAVE")==0) {
+		// Leave
+		leave();
+	}
 	else if (strcmp(msg.type.c_str(), "UPD_FINGER")==0) {
 		// construct finger table
 		int inport = atoi(msg.tokens[2].c_str());
@@ -423,28 +469,78 @@ void node::process_msg(message msg) {
 		string req_addr = encode_addr(inip, inport);
 		llu req_id = hash(req_addr);
 		location* req_loc = new location(inip, inport);
-		finger[i] = req_loc;
-
-		printf("Finger[%d] = ",i+1);
-		cout << finger[i]->getaddr() << " ";
-		cout << "(" << finger[i]->id << ")" << endl;
+		if(req_id < finger[i]->id) {
+			finger[i] = req_loc;
+			// cout << "here" << endl;
+			printf("Finger[%d] = ",i+1);
+			cout << finger[i]->getaddr() << " ";
+			cout << "(" << finger[i]->id << ")" << endl;
+		}
 	}
 	else if (strcmp(msg.type.c_str(), "CLI_UPD_FINGER")==0) {
 		send_msg(successor(),"UPD_FINGER",getaddr());
+	}
+	else if (strcmp(msg.type.c_str(), "REPLACE_FT")==0) {
+		int inport = atoi(msg.tokens[2].c_str());
+		string inip = msg.tokens[1];
+		string req_addr = encode_addr(inip, inport);
+		llu req_id = hash(req_addr);
+		int inport_new = atoi(msg.tokens[4].c_str());
+		string inip_new = msg.tokens[3];
+		string req_addr_new = encode_addr(inip_new, inport_new);
+		llu req_id_new = hash(req_addr_new);
+		if (req_id==id ) {
+			std::map<string,string>::iterator it;
+			for (it=filemap.begin(); it!=filemap.end(); ++it)  {
+				if (hash(it->second)==req_id) {
+					cout << "Removing " << it->first << " from index" << endl;
+					filemap.erase(it);
+					it = filemap.begin();
+				}
+			}
+			cout << "ALl done. Bye" << endl;
+			exit(0);
+		}
+		else {
+			for(int i=0; i<MBIT; i++) {
+				if (finger[i]->id == req_id) {
+					finger[i] = new location(inip_new,inport_new);
+				}
+			}
+			std::map<string,string>::iterator it;
+			for (it=filemap.begin(); it!=filemap.end(); ++it)  {
+				if (hash(it->second)==req_id) {
+					cout << "Removing " << it->first << " from index" << endl;
+					filemap.erase(it);
+					it = filemap.begin();
+				}
+			}
+			forward_msg(successor(),msg);
+		}
 	}
 	else {
 		// Anything else
 	}
 }
 
+void node::leave() {
+	std::map<string,string>::iterator it;
+	// send files to successor
+	for (it=filemap.begin(); it!=filemap.end(); ++it) {
+		send_msg(successor() ,"ADD_FILE", it->first + ":" + it->second);
+	}
+	// update finger table of others
+	send_msg(successor() ,"REPLACE_FT", getaddr() + ":" + successor()->getaddr());
+}
+
 location* node::closest_successor(llu k) {
-	location * loc = finger[0];
-	for(int i=1; i<MBIT; i++) {
+	location * loc = this;
+	for(int i=0; i<MBIT; i++) {
 		if (finger[i]->id > loc->id) {
-			if (k> loc->id && k < finger[i]->id) break;
+			if (k> loc->id && k <= finger[i]->id) break;
 		}
 		else {
-			if (k < finger[i]->id || k> loc->id) break;
+			if (k <= finger[i]->id || k> loc->id) break;
 		}
 		loc = finger[i];
 	}
@@ -473,10 +569,13 @@ void node::share_files() {
 void node::stabalize() {
 	std::map<string,string>::iterator it;
 	for (it=filemap.begin(); it!=filemap.end(); ++it) {
-        if (hash(it->first) <= predecessor()->id) {
+		if (hash(it->first) <= predecessor()->id) {
 			send_msg(predecessor() ,"ADD_FILE", it->first + ":" + it->second);
+			filemap.erase (it->first);
+			it = filemap.begin();
+			if(filemap.empty()) break;
 		}
-    }
+	}
 }
 
 void node::printIndex() {
@@ -486,8 +585,10 @@ void node::printIndex() {
 		return;
 	}
 	std::map<string,string>::iterator it;
-	for (it=filemap.begin(); it!=filemap.end(); ++it)
-		std::cout << "  " << it->first << " => " << it->second << '\n';
+	for (it=filemap.begin(); it!=filemap.end(); ++it)  {
+		std::cout << "  " << it->first << " => " << it->second;
+		cout << " (" << hash(it->first) << ")" << endl;
+	}
 }
 
 void node::print() {
@@ -565,6 +666,7 @@ bool node::download_file (string filename, string saveas, string ip, int port) {
 	socklen_t addr_size;
 	sockaddr_in serverAddr;
 
+	saveas = folder + "/" + saveas;
 	filesocket = socket(PF_INET, SOCK_STREAM, 0);
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(port);
@@ -654,6 +756,7 @@ void node::run_file_server() {
 				if (FD_ISSET(j, &tempset)) {
 					result = recv(j, buffer, BUFFER_SIZE, 0);
 					string fname(buffer,result);
+					fname = folder + "/" + fname;
 
 					if(result > 0) {
 						buffer[result] = 0;
@@ -671,7 +774,7 @@ void node::run_file_server() {
 						{
 							result1=fread (buffer,1,BUFFER_SIZE,f);
 							int sb = send(j,buffer,result1,0);
-							cout << result1 << endl;
+							// cout << result1 << endl;
 						}
 						fclose(f);
 						cout << "Close File\n" << endl;

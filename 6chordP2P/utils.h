@@ -15,8 +15,9 @@
 #include <climits>
 #include <math.h>
 
-#define MAX_ID ULLONG_MAX
-#define MBIT 64 // log2 (MAX_ID) 
+#define MAX_ID 8
+// #define MAX_ID ULLONG_MAX
+#define MBIT 3 // log2 (MAX_ID) 
 
 using namespace std;
 

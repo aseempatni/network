@@ -64,7 +64,7 @@ llu hash(string p) { // consistent hashing
 	h ^= (h >> 11);
 	h += (h << 15);
 	// return h;
-	return h%20;
+	return h%8;
 }
 
 void error(const char *msg)

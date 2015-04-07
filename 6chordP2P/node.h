@@ -29,7 +29,7 @@
 #define SEARCH 2
 #define DOWNLOAD 3
 #define STATS 4
-
+#define LEAVE 5
 
 #define MAX_BUFFER_SIZE 1024
 #define MAX_CLIENTS 2
@@ -63,19 +63,21 @@ public:
 	void print();
 	void printreq();
 	void print_ft ();
-
+    void leave_req();
 	void share_files();
 	void req_share_files();
 	void update_fingers();
 	void handle_neighbor(message msg);
 	void printIndex();
 	void stabalize();
+	void leave();
 	// void insert_before (string addr_str);
 	void insert_after (string addr_str);
-
+	string folder;
 	location* finger[MBIT];
 	void update_ft(location *loc);
 	location* closest_successor(llu k);
+	list<string> listDir();
 private:
 	location* successor_node;
 	location* predecessor_node;
