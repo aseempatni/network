@@ -24,12 +24,13 @@ public:
 
 /**
 Allowed types:
-	NBR		Search for neighbor
-	NBP		Update Predecessor
-	NBS 	Update Successor
-	RFL		Request file list
-	ADF		Add file to map
-	SEA 	Search
+	NBR			Search for neighbor
+	NBP			Update Predecessor
+	NBS 		Update Successor
+	RFL			Request file list
+	ADD_FILE	Add file to map
+	SEARCH 		Search
+	UPD_FINGER	Update fingers
 */
 
 #endif

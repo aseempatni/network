@@ -35,6 +35,9 @@ void Tokenize(const string& str,
 string encode_addr(string ip, int port) {
 	return ip + ":" + tostr(port);
 }
+// string encode_addr(struct sockaddr_in addr) {
+// 	string out =  inet_ntoa(addr.sin_addr) + ":" + tostr((int) ntohs(addr.sin_port));
+// }
 
 int decode_port(string encoded_addr) {
 	vector<string> tokens;
@@ -48,19 +51,6 @@ string decode_ip(string encoded_addr) {
 	return tokens[0];
 }
 
-llu hash(string p, int len) { // consistent hashing
-	llu h = 0;
-	int i;
-	for (i = 0; i < len; i++) {
-		h += p[i];
-		h += (h << 10);
-		h ^= (h >> 6);
-	}
-	h += (h << 3);
-	h ^= (h >> 11);
-	h += (h << 15);
-	return h;
-}
 llu hash(string p) { // consistent hashing
 	int len = p.size();
 	llu h = 0;
@@ -73,7 +63,8 @@ llu hash(string p) { // consistent hashing
 	h += (h << 3);
 	h ^= (h >> 11);
 	h += (h << 15);
-	return h;
+	// return h;
+	return h%20;
 }
 
 void error(const char *msg)
