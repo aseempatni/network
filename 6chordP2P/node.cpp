@@ -148,7 +148,7 @@ void node::update_fingers() {
 	sleep(1);
 	cout << "Updating finger table" << endl;
 	send_msg(my_sock,"CLI_UPD_FINGER",getaddr());
-	// share_files();
+	// req_share_files();
 	// Ask node 0 for the neighbors
 }
 
@@ -312,20 +312,12 @@ void node::process_msg(message msg) {
 	}
 	else if (strcmp(msg.type.c_str(), "NBP")==0) { 
 		// Change successor
-		sockaddr_in new_sock;
-		new_sock.sin_family=AF_INET;
-		new_sock.sin_addr.s_addr=inet_addr(msg.tokens[1].c_str());
-		new_sock.sin_port=htons(atoi(msg.tokens[2].c_str()));
-		this->predecessor_node = new location(new_sock);
+		this->predecessor_node = new location(msg.tokens[1], atoi(msg.tokens[2].c_str()));
 		stabalize();
 	}
 	else if (strcmp(msg.type.c_str(), "NBS")==0) { 
 		// Change predecessor
-		sockaddr_in new_sock;
-		new_sock.sin_family=AF_INET;
-		new_sock.sin_addr.s_addr=inet_addr(msg.tokens[1].c_str());
-		new_sock.sin_port=htons(atoi(msg.tokens[2].c_str()));
-		this->successor_node = new location(new_sock);	
+		this->successor_node = new location(msg.tokens[1], atoi(msg.tokens[2].c_str()));
 	}
 	else if (strcmp(msg.type.c_str(), "ADD_FILE")==0) { 
 		// Add file to hash

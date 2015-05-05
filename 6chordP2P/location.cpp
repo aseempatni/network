@@ -22,6 +22,7 @@ location::location (string ip, int port) {
 location::location() {
 	
 }
+
 string location::getaddr() {
 	return ip+":"+tostr(port);
 }
